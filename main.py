@@ -2,7 +2,7 @@ from concurrent import futures
 
 import grpc
 
-from ratdream import HelloService, add_HelloServiceServicer_to_server
+from ratdream import HelloReply, HelloService, add_HelloServiceServicer_to_server
 
 
 class ExampleService(HelloService):
@@ -12,7 +12,7 @@ class ExampleService(HelloService):
 
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    add_HelloServiceServicer_to_server(ExampleServicep(), server)
+    add_HelloServiceServicer_to_server(ExampleService(), server)
     server.add_insecure_port("[::]:50051")
     server.start()
     server.wait_for_termination()
