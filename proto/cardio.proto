@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package cardio;
+
+service CardioService {
+  rpc StreamCardioData(CardioRequest) returns (stream CardioData);
+}
+
+message CardioRequest {
+  string client_id = 1;
+}
+
+message CardioData {
+  int32 timestamp = 1;
+  repeated float vector = 2;
+}
+
+message SetWorkingDirectoryRequest {
+  string working_directory = 1;
+}

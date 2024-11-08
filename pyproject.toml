@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "ratdream"
+version = "0.1.0"
+description = "Бекенд для цифрового прорыва"
+authors = ["Timur <100406268+Timik232@users.noreply.github.com>"]
+license = "Apache 2.0"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+protobuf = "^5.28.3"
+grpcio = "^1.67.1"
+grpcio-tools = "^1.67.1"
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^4.0.1"
+black = "^24.10.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

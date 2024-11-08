@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package hello;
+
+// Сервис для тестирования соединения с сервером
+service HelloService {
+  // Простая функция, которая возвращает приветственное сообщение
+  rpc SayHello (HelloRequest) returns (HelloReply);
+}
+
+// Сообщение запроса, содержит имя
+message HelloRequest {
+  string name = 1; // Имя пользователя
+}
+
+// Сообщение ответа, содержит приветственное сообщение
+message HelloReply {
+  string message = 1; // Приветственное сообщение
+}
