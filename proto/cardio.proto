@@ -6,6 +6,7 @@ package cardio;
 service CardioService {
   rpc StreamCardioData(CardioRequest) returns (stream CardioData);
   rpc SetWorkingDirectory(SetWorkingDirectoryRequest) returns (SetWorkingDirectoryResponse);
+  rpc SetFileToProcess(SetFileToProcessRequest) returns (SetFileToProcessResponse);
 }
 
 message CardioRequest {
@@ -22,5 +23,13 @@ message SetWorkingDirectoryRequest {
 }
 
 message SetWorkingDirectoryResponse {
+  bool success = 1;
+}
+
+message SetFileToProcessRequest {
+  string file_to_process = 1;
+}
+
+message SetFileToProcessResponse {
   bool success = 1;
 }
