@@ -16,7 +16,7 @@ import cardio_pb2_grpc
 class ECGSimulator:
     def __init__(self):
         self.edf_data = self.read_edf_file("data/Ati4x1_15m_BL_6h.edf")
-        self.vectors = list(self.edf_data["data"])
+        self.vectors = list(self.edf_data["data"].values())
         self.slice = 10
         self.previous_slice = 0
         self.working_directory = "output"
@@ -30,10 +30,18 @@ class ECGSimulator:
 
         while True:
             timestamp = int(time.time())
-            sliced_vectors = [vector[self.previous_slice : self.previous_slice + self.slice] for vector in self.vectors]
+            sliced_vectors = [
+                vector[self.previous_slice : self.previous_slice + self.slice]
+                for vector in self.vectors
+            ]
             self.previous_slice += self.slice
             sliced_vectors = self.process_data(sliced_vectors)
-            cardio_data = cardio_pb2.CardioData(timestamp=timestamp, vector=sliced_vectors)
+            cardio_data = cardio_pb2.CardioData(
+                timestamp=timestamp,
+                vector1=sliced_vectors[0],
+                vector2=sliced_vectors[1],
+                vector3=sliced_vectors[2],
+            )
             # self.save_edf_file(self.edf_data)
             yield cardio_data
             time.sleep(0.03)
