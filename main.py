@@ -1,9 +1,11 @@
 import math
+import os
 import time
 import grpc
 from concurrent import futures
 import random
 import pyedflib
+from typing import Optional
 
 import cardio_pb2
 import cardio_pb2_grpc
@@ -11,10 +13,12 @@ import cardio_pb2_grpc
 
 class ECGSimulator:
     def __init__(self):
-        self.vector = list(read_edf_file("data/Ati4x1_15m_BL_6h.edf")["FrL"])
+        self.edf_data = self.read_edf_file("data/Ati4x1_15m_BL_6h.edf")
+        self.vector = list(self.edf_data["data"]["FrL"])
         self.slice = 10
         self.previous_slice = 0
-
+        self.working_directory: Optional[str] = None
+        self.number_to_save = 0
 
     def StreamCardioData(self, request, context):
         print(f"Client {request.client_id} connected.")
@@ -23,7 +27,7 @@ class ECGSimulator:
             # Генерируем данные ЭКГ в виде вектора
             timestamp = int(time.time())
             # vector = self.generate_ecg_vector()
-            vector = self.vector[self.previous_slice:self.previous_slice + self.slice]
+            vector = self.vector[self.previous_slice : self.previous_slice + self.slice]
             self.previous_slice += self.slice
             # Логирование отправляемых данных
             print(
@@ -34,6 +38,61 @@ class ECGSimulator:
             cardio_data = cardio_pb2.CardioData(timestamp=timestamp, vector=vector)
             yield cardio_data
             time.sleep(0.5)  # Задержка для имитации передачи в реальном времени
+
+    def SetWorkingDirectory(self, request, context):
+        try:
+            if not os.path.exists(request.working_directory):
+                os.makedirs(request.working_directory)
+            else:
+                if not os.path.isdir(request.working_directory):
+                    raise Exception("Path is not a directory.")
+            self.working_directory = request.working_directory
+            return cardio_pb2.SetWorkingDirectoryResponse(success=True)
+        except Exception as e:
+            print(f"Error setting working directory: {e}")
+            return cardio_pb2.SetWorkingDirectoryResponse(success=False)
+
+    def save_edf_file(self, data: dict):
+        """
+        Сохранение данных в файл EDF.
+
+        Args:
+            data (dict): Данные для сохранения в файле EDF.
+        """
+        if self.working_directory is None:
+            raise Exception("Working directory is not set.")
+        else:
+            file_path = os.path.join(
+                self.working_directory, f"ecg_output{self.number_to_save}.edf"
+            )
+            self.number_to_save += 1
+            with pyedflib.EdfWriter(
+                file_path, len(data["data"]), file_type=pyedflib.FILETYPE_EDFPLUS
+            ) as f:
+                f.setHeader(data["header"])
+                f.setSignalHeaders(data["data"].keys())
+                f.writeSamples(list(data["data"]()))
+
+    def read_edf_file(self, file_path: str):
+        """
+        Чтение данных из файла EDF.
+
+        Args:
+            file_path (str): Путь к файлу EDF.
+
+        Returns:
+            dict: Словарь с данными из файла EDF.
+        """
+        with pyedflib.EdfReader(file_path) as f:
+            header = f.getHeader()
+            signal_labels = f.getSignalLabels()
+            signals = [f.readSignal(i) for i in range(f.signals_in_file)]
+
+        data = {}
+        data_buf = dict(zip(signal_labels, signals))
+        data["data"] = data_buf
+        data["header"] = header
+        return data
 
     def generate_ecg_vector(self, num_points=5) -> list:
         """
@@ -62,27 +121,6 @@ class ECGSimulator:
         return vector
 
 
-def read_edf_file(file_path: str):
-    """
-    Чтение данных из файла EDF.
-
-    Args:
-        file_path (str): Путь к файлу EDF.
-
-    Returns:
-        dict: Словарь с данными из файла EDF.
-    """
-    with pyedflib.EdfReader(file_path) as f:
-        header = f.getHeader()
-        print("Header:" + str(header))
-
-        signal_labels = f.getSignalLabels()
-        signals = [f.readSignal(i) for i in range(f.signals_in_file)]
-
-    data = dict(zip(signal_labels, signals))
-    return data
-
-
 def serve():
     # Initialize the server
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
@@ -101,4 +139,3 @@ def serve():
 
 if __name__ == "__main__":
     serve()
-

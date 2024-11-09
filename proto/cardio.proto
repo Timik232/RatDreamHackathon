@@ -2,8 +2,10 @@ syntax = "proto3";
 
 package cardio;
 
+
 service CardioService {
   rpc StreamCardioData(CardioRequest) returns (stream CardioData);
+  rpc SetWorkingDirectory(SetWorkingDirectoryRequest) returns (SetWorkingDirectoryResponse);
 }
 
 message CardioRequest {
@@ -17,4 +19,8 @@ message CardioData {
 
 message SetWorkingDirectoryRequest {
   string working_directory = 1;
+}
+
+message SetWorkingDirectoryResponse {
+  bool success = 1;
 }

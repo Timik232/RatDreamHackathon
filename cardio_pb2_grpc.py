@@ -39,12 +39,23 @@ class CardioServiceStub(object):
                 request_serializer=cardio__pb2.CardioRequest.SerializeToString,
                 response_deserializer=cardio__pb2.CardioData.FromString,
                 _registered_method=True)
+        self.SetWorkingDirectory = channel.unary_unary(
+                '/cardio.CardioService/SetWorkingDirectory',
+                request_serializer=cardio__pb2.SetWorkingDirectoryRequest.SerializeToString,
+                response_deserializer=cardio__pb2.SetWorkingDirectoryResponse.FromString,
+                _registered_method=True)
 
 
 class CardioServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def StreamCardioData(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def SetWorkingDirectory(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -57,6 +68,11 @@ def add_CardioServiceServicer_to_server(servicer, server):
                     servicer.StreamCardioData,
                     request_deserializer=cardio__pb2.CardioRequest.FromString,
                     response_serializer=cardio__pb2.CardioData.SerializeToString,
+            ),
+            'SetWorkingDirectory': grpc.unary_unary_rpc_method_handler(
+                    servicer.SetWorkingDirectory,
+                    request_deserializer=cardio__pb2.SetWorkingDirectoryRequest.FromString,
+                    response_serializer=cardio__pb2.SetWorkingDirectoryResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -86,6 +102,33 @@ class CardioService(object):
             '/cardio.CardioService/StreamCardioData',
             cardio__pb2.CardioRequest.SerializeToString,
             cardio__pb2.CardioData.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def SetWorkingDirectory(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/cardio.CardioService/SetWorkingDirectory',
+            cardio__pb2.SetWorkingDirectoryRequest.SerializeToString,
+            cardio__pb2.SetWorkingDirectoryResponse.FromString,
             options,
             channel_credentials,
             insecure,

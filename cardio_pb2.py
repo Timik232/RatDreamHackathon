@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0c\x63\x61rdio.proto\x12\x06\x63\x61rdio\"\"\n\rCardioRequest\x12\x11\n\tclient_id\x18\x01 \x01(\t\"/\n\nCardioData\x12\x11\n\ttimestamp\x18\x01 \x01(\x05\x12\x0e\n\x06vector\x18\x02 \x03(\x02\"7\n\x1aSetWorkingDirectoryRequest\x12\x19\n\x11working_directory\x18\x01 \x01(\t2P\n\rCardioService\x12?\n\x10StreamCardioData\x12\x15.cardio.CardioRequest\x1a\x12.cardio.CardioData0\x01\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0c\x63\x61rdio.proto\x12\x06\x63\x61rdio\"\"\n\rCardioRequest\x12\x11\n\tclient_id\x18\x01 \x01(\t\"/\n\nCardioData\x12\x11\n\ttimestamp\x18\x01 \x01(\x05\x12\x0e\n\x06vector\x18\x02 \x03(\x02\"7\n\x1aSetWorkingDirectoryRequest\x12\x19\n\x11working_directory\x18\x01 \x01(\t\".\n\x1bSetWorkingDirectoryResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x32\xb0\x01\n\rCardioService\x12?\n\x10StreamCardioData\x12\x15.cardio.CardioRequest\x1a\x12.cardio.CardioData0\x01\x12^\n\x13SetWorkingDirectory\x12\".cardio.SetWorkingDirectoryRequest\x1a#.cardio.SetWorkingDirectoryResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -37,6 +37,8 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_CARDIODATA']._serialized_end=107
   _globals['_SETWORKINGDIRECTORYREQUEST']._serialized_start=109
   _globals['_SETWORKINGDIRECTORYREQUEST']._serialized_end=164
-  _globals['_CARDIOSERVICE']._serialized_start=166
-  _globals['_CARDIOSERVICE']._serialized_end=246
+  _globals['_SETWORKINGDIRECTORYRESPONSE']._serialized_start=166
+  _globals['_SETWORKINGDIRECTORYRESPONSE']._serialized_end=212
+  _globals['_CARDIOSERVICE']._serialized_start=215
+  _globals['_CARDIOSERVICE']._serialized_end=391
 # @@protoc_insertion_point(module_scope)
