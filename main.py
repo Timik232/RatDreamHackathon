@@ -100,8 +100,5 @@ def serve():
 
 
 if __name__ == "__main__":
-    # serve()
-    data = read_edf_file("data/Ati4x1_15m_BL_6h.edf")
-    print(data)
-    data = read_edf_file("data/Ati4x1_15m_BL_6h_fully_marked.edf")
-    print(data)
+    serve()
+
