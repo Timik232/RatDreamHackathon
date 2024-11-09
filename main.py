@@ -6,6 +6,7 @@ import time
 from concurrent import futures
 from typing import Optional
 import threading
+import re
 
 import grpc
 import pyedflib
@@ -16,11 +17,19 @@ from RPCclient import external_function
 from rabbit import consume_data
 
 
+def get_age_pharm(data: dict) -> tuple:
+    splitted = data["file_name"].split("_")
+    age = re.sub(r"[\D]+", "", splitted[1])
+    pharm = True if "Pharm!" in data else False
+    return age, pharm
+
+
 class ECGSimulator:
     def __init__(self):
-        self.edf_data = self.read_edf_file("data/Ati4x1_15m_BL_6h.edf")
-        # print(self.edf_data)
-        self.vectors = list(self.edf_data["data"].values())
+        # self.edf_data = self.read_edf_file("data/Ati4x1_15m_BL_6h.edf")
+        # self.vectors = list(self.edf_data["data"].values())
+        self.edf_data = {}
+        self.vectors = []
         self.slice = 10
         self.previous_slice = 0
         self.working_directory = "output"
@@ -30,8 +39,6 @@ class ECGSimulator:
         """
         Потоковая передача данных ЭКГ клиенту.
         """
-        print(f"Client {request.client_id} connected.")
-
         while True:
             timestamp = int(time.time())
             sliced_vectors = [
@@ -39,7 +46,7 @@ class ECGSimulator:
                 for vector in self.vectors
             ]
             self.previous_slice += self.slice
-            sliced_vectors = external_function(sliced_vectors)
+            # sliced_vectors = external_function(sliced_vectors)
             print(sliced_vectors)
             cardio_data = cardio_pb2.CardioData(
                 timestamp=timestamp,
@@ -71,23 +78,21 @@ class ECGSimulator:
         Обработка файла, переданного клиентом.
         """
         try:
-            edf_data = self.read_edf_file(request.file_to_process)
-            vectors = list(self.edf_data["data"])
+            self.edf_data = self.read_edf_file(request.file_to_process)
+            self.vectors = list(self.edf_data["data"].values())
         except Exception as e:
             print(f"Error setting file to process: {e}")
             return cardio_pb2.SetFileToProcessResponse(success=False)
-        for i in range(0, len(vectors[0]), self.slice):
-            sliced_vectors = [vector[i : i + self.slice] for vector in self.vectors]
-            self.previous_slice += self.slice
-            sliced_vectors = self.process_data(sliced_vectors)
-
-        self.save_edf_file(edf_data)
-        return cardio_pb2.SetFileToProcessResponse(success=True)
-
-    def process_data(self, data):
-        print("Processing data...")
-        # Обработка данных
-        return data
+        age, pharm = get_age_pharm(self.edf_data)
+        labels = list(self.edf_data["data"].keys())
+        return cardio_pb2.SetFileToProcessResponse(
+            success=True,
+            age=age,
+            pharm=pharm,
+            label1=labels[0],
+            label2=labels[1],
+            label3=labels[2],
+        )
 
     def save_edf_file(self, data: dict):
         """
@@ -134,33 +139,8 @@ class ECGSimulator:
         data_buf = dict(zip(signal_labels, signals))
         data["data"] = data_buf
         data["header"] = header
+        data["file_name"] = os.path.basename(file_path)
         return data
-
-    def generate_ecg_vector(self, num_points=5) -> list:
-        """
-        Симуляция простой синусоидальной ЭКГ с добавлением шума.
-
-        Args:
-            num_points (int): Количество точек данных для генерации ЭКГ.
-
-        Returns:
-            list: Список y-значений, представляющих ЭКГ-сигнал.
-        """
-        vector = []
-        phase_shift = random.uniform(
-            0, 2 * math.pi
-        )  # случайный сдвиг фазы для вариации
-
-        for i in range(num_points):
-            # Генерация синусоидального сигнала
-            base_wave = math.sin(i * 0.1 + phase_shift) * 1.5  # 1.5 — амплитуда
-            # Добавление шума от -0.5 до 0.3
-            noise = random.uniform(-0.5, 0.3)
-            # Итоговое значение с добавлением шума
-            y_value = base_wave + noise
-            vector.append(y_value)
-
-        return vector
 
 
 def serve():

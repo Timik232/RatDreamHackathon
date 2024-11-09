@@ -1,12 +1,42 @@
 import pika
 import time
 import threading
+import sqlite3
+import json
 
+
+conn = sqlite3.connect('RatDream.db')
+cursor = conn.cursor()
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS data (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    last_updated TEXT,
+    last_mode TEXT,
+    chunk TEXT,
+    predchunk TEXT,
+    metainfo TEXT
+)
+''')
+
+
+def insert_data(last_updated, last_mode, chunk, predchunk, metainfo):
+    cursor.execute('''
+    INSERT INTO data (last_updated, last_mode, chunk, predchunk, metainfo)
+    VALUES (?, ?, ?, ?, ?)
+    ''', (last_updated, last_mode, json.dumps(chunk), json.dumps(predchunk), json.dumps(metainfo)))
+    conn.commit()
+
+
+def get_info_from_rabbitmq(data):
+    predict_classes(data.time)
+
+def predict_classes(time):
+    pass
 
 def process_data(data):
-    # Симуляция длительной обработки данных ML-сервисом
-    print(f"Processing data: {data}")
-    time.sleep(5)  # Замените на реальный код обработки данных
+    get_info_from_rabbitmq(data)
+    predict_classes(time)
+
     result = data
     return result
 

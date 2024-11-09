@@ -10,7 +10,6 @@ service CardioService {
 }
 
 message CardioRequest {
-  string client_id = 1;
 }
 
 message CardioData {
@@ -34,4 +33,9 @@ message SetFileToProcessRequest {
 
 message SetFileToProcessResponse {
   bool success = 1;
+  string age = 2;
+  bool pharm = 3;
+  string label1 = 4;
+  string label2 = 5;
+  string label3 = 6;
 }
