@@ -184,5 +184,4 @@ def serve():
 if __name__ == "__main__":
     consumer_thread = threading.Thread(target=consume_data, daemon=True)
     consumer_thread.start()
-    external_function([[1, 2, 3], [1, 2, 3]])
     serve()
