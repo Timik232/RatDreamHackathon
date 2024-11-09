@@ -15,7 +15,9 @@ message CardioRequest {
 
 message CardioData {
   int32 timestamp = 1;
-  repeated float vector = 2;
+  repeated float vector1 = 2;
+  repeated float vector2 = 3;
+  repeated float vector3 = 4;
 }
 
 message SetWorkingDirectoryRequest {

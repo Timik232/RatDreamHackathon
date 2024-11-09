@@ -16,7 +16,7 @@ import cardio_pb2_grpc
 class ECGSimulator:
     def __init__(self):
         self.edf_data = self.read_edf_file("data/Ati4x1_15m_BL_6h.edf")
-        self.vector = list(self.edf_data["data"]["FrL"])
+        self.vectors = list(self.edf_data["data"])
         self.slice = 10
         self.previous_slice = 0
         self.working_directory = "output"
@@ -30,13 +30,13 @@ class ECGSimulator:
 
         while True:
             timestamp = int(time.time())
-            vector = self.vector[self.previous_slice : self.previous_slice + self.slice]
+            sliced_vectors = [vector[self.previous_slice : self.previous_slice + self.slice] for vector in self.vectors]
             self.previous_slice += self.slice
-            vector = self.process_data(vector)
-            print(f"Sending data at timestamp {timestamp} with vector: {vector[:5]}...")
-            cardio_data = cardio_pb2.CardioData(timestamp=timestamp, vector=vector)
+            sliced_vectors = self.process_data(sliced_vectors)
+            cardio_data = cardio_pb2.CardioData(timestamp=timestamp, vector=sliced_vectors)
             # self.save_edf_file(self.edf_data)
             yield cardio_data
+            time.sleep(0.03)
 
     def SetWorkingDirectory(self, request, context):
         """
@@ -60,14 +60,14 @@ class ECGSimulator:
         """
         try:
             edf_data = self.read_edf_file(request.file_to_process)
-            vector = list(self.edf_data["data"]["FrL"])
+            vectors = list(self.edf_data["data"])
         except Exception as e:
             print(f"Error setting file to process: {e}")
             return cardio_pb2.SetFileToProcessResponse(success=False)
-        for i in range(0, len(vector), self.slice):
-            vector = self.vector[i : i + self.slice]
+        for i in range(0, len(vectors[0]), self.slice):
+            sliced_vectors = [vector[i : i + self.slice] for vector in self.vectors]
             self.previous_slice += self.slice
-            vector = self.process_data(vector)
+            sliced_vectors = self.process_data(sliced_vectors)
 
         self.save_edf_file(edf_data)
         return cardio_pb2.SetFileToProcessResponse(success=True)
