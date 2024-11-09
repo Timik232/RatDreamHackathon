@@ -3,21 +3,28 @@ import time
 import grpc
 from concurrent import futures
 import random
+import pyedflib
 
-# Import the generated classes
 import cardio_pb2
 import cardio_pb2_grpc
 
 
 class ECGSimulator:
+    def __init__(self):
+        self.vector = list(read_edf_file("data/Ati4x1_15m_BL_6h.edf")["FrL"])
+        self.slice = 10
+        self.previous_slice = 0
+
+
     def StreamCardioData(self, request, context):
         print(f"Client {request.client_id} connected.")
 
         while True:
             # Генерируем данные ЭКГ в виде вектора
             timestamp = int(time.time())
-            vector = self.generate_ecg_vector()
-
+            # vector = self.generate_ecg_vector()
+            vector = self.vector[self.previous_slice:self.previous_slice + self.slice]
+            self.previous_slice += self.slice
             # Логирование отправляемых данных
             print(
                 f"Sending data at timestamp {timestamp} with vector: {vector[:5]}..."
@@ -28,7 +35,7 @@ class ECGSimulator:
             yield cardio_data
             time.sleep(0.5)  # Задержка для имитации передачи в реальном времени
 
-    def generate_ecg_vector(self, num_points=5):
+    def generate_ecg_vector(self, num_points=5) -> list:
         """
         Симуляция простой синусоидальной ЭКГ с добавлением шума.
 
@@ -55,6 +62,27 @@ class ECGSimulator:
         return vector
 
 
+def read_edf_file(file_path: str):
+    """
+    Чтение данных из файла EDF.
+
+    Args:
+        file_path (str): Путь к файлу EDF.
+
+    Returns:
+        dict: Словарь с данными из файла EDF.
+    """
+    with pyedflib.EdfReader(file_path) as f:
+        header = f.getHeader()
+        print("Header:" + str(header))
+
+        signal_labels = f.getSignalLabels()
+        signals = [f.readSignal(i) for i in range(f.signals_in_file)]
+
+    data = dict(zip(signal_labels, signals))
+    return data
+
+
 def serve():
     # Initialize the server
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
@@ -72,4 +100,8 @@ def serve():
 
 
 if __name__ == "__main__":
-    serve()
+    # serve()
+    data = read_edf_file("data/Ati4x1_15m_BL_6h.edf")
+    print(data)
+    data = read_edf_file("data/Ati4x1_15m_BL_6h_fully_marked.edf")
+    print(data)
