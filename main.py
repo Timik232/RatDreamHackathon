@@ -23,6 +23,9 @@ class ECGSimulator:
         self.number_to_save = 0
 
     def StreamCardioData(self, request, context):
+        """
+        Потоковая передача данных ЭКГ клиенту.
+        """
         print(f"Client {request.client_id} connected.")
 
         while True:
@@ -36,6 +39,9 @@ class ECGSimulator:
             yield cardio_data
 
     def SetWorkingDirectory(self, request, context):
+        """
+        Установка рабочего каталога для сохранения файлов.
+        """
         try:
             if not os.path.exists(request.working_directory):
                 os.makedirs(request.working_directory)
@@ -49,6 +55,9 @@ class ECGSimulator:
             return cardio_pb2.SetWorkingDirectoryResponse(success=False)
 
     def SetFileToProcess(self, request, context):
+        """
+        Обработка файла, переданного клиентом.
+        """
         try:
             edf_data = self.read_edf_file(request.file_to_process)
             vector = list(self.edf_data["data"]["FrL"])
@@ -143,7 +152,9 @@ class ECGSimulator:
 
 
 def serve():
-    # Initialize the server
+    """
+    Запуск сервера gRPC.
+    """
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     cardio_pb2_grpc.add_CardioServiceServicer_to_server(ECGSimulator(), server)
 
