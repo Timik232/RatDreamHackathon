@@ -16,6 +16,9 @@ from rabbit import init_rabbit
 
 
 def get_age_pharm(data: dict) -> tuple:
+    """
+    Получение возраста и наличия фармакологической карточки из данных.
+    """
     splitted = data["file_name"].split("_")
     age = re.sub(r"[\D]+", "", splitted[1])
     pharm = True if "Pharm!" in data else False
@@ -23,6 +26,9 @@ def get_age_pharm(data: dict) -> tuple:
 
 
 class ECGSimulator:
+    """
+    Класс для работы с данными ЭКГ.
+    """
     def __init__(self):
         # self.edf_data = self.read_edf_file("data/Ati4x1_15m_BL_6h.edf")
         # self.vectors = list(self.edf_data["data"].values())
@@ -38,22 +44,22 @@ class ECGSimulator:
         Потоковая передача данных ЭКГ клиенту.
         """
         timestamps = np.linspace(0, self.edf_data["duration"], self.vectors[0].shape[0])
-        for i in range(0, self.vectors[0].shape[0], self.step):
+        for i in range(0, self.vectors[0].shape[0], self.slice):
             if i + self.slice > self.vectors[0].shape[0]:
                 break
             timestamp = list(timestamps[i : i + self.slice])
             sliced_vectors = [
                 list(vector[i : i + self.slice]) for vector in self.vectors
             ]
-            return_data = sliced_vectors
-            return_data = external_function(self.edf_data, sliced_vectors)
+            chunks = {"x": timestamp, "y": sliced_vectors}
+            return_data = external_function(self.edf_data, chunks)
             print(return_data)
             cardio_data = cardio_pb2.CardioData(
                 timestamp=timestamp,
-                vector1=return_data[0],
-                vector2=return_data[1],
-                vector3=return_data[2],
-                annotation="ds1"
+                vector1=sliced_vectors[0],
+                vector2=sliced_vectors[1],
+                vector3=sliced_vectors[2],
+                annotation=return_data
             )
             yield cardio_data
 
@@ -109,7 +115,7 @@ class ECGSimulator:
         change_number = 0
         timestamps = np.linspace(0, self.edf_data["duration"], self.vectors[0].shape[0])
         if "annotations" in self.edf_data.keys():
-            for i in range(0, self.vectors[0].shape[0], self.step):
+            for i in range(0, self.vectors[0].shape[0], self.slice):
                 if i + self.slice > self.vectors[0].shape[0]:
                     break
                 timestamp = list(timestamps[i : i + self.slice])

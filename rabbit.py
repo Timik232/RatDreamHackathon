@@ -1,3 +1,6 @@
+"""
+Модуль для работы с RabbitMQ и локальной базой данных
+"""
 import pika
 import time
 import threading
@@ -8,6 +11,9 @@ from ML import MLModels
 
 
 class Rabbit:
+    """
+    Класс для работы с RabbitMQ
+    """
     def __init__(self):
         self.conn = sqlite3.connect("RatDream.db")
         self.cursor = self.conn.cursor()
@@ -24,12 +30,31 @@ class Rabbit:
         )
         """
         )
+        self.conn_annotation = sqlite3.connect("Annotations.db")
+        self.cursor_annotation = self.conn_annotation.cursor()
+        self.cursor.execute(
+            """
+        CREATE TABLE IF NOT EXISTS annotation (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            time REAL,
+            annotation TEXT
+        )
+        """
+        )
+        self.clear_table()
+        self.ml = MLModels()
 
     def get_mode(self, data):
         return "start"
 
     def insert_data(
-        self, file_name, last_updated, last_mode, chunk, predchunk, metainfo
+        self,
+        file_name: str,
+        last_updated: datetime,
+        last_mode: str,
+        chunk: dict,
+        predchunk: str,
+        metainfo: dict,
     ):
         """
         Функция для добавления данных в базу данных
@@ -50,8 +75,22 @@ class Rabbit:
         )
         self.conn.commit()
 
+    def clear_table(self):
+        """
+        Функция для очистки всех строк в таблице
+        """
+        self.cursor.execute("DELETE FROM data")
+        self.conn.commit()
+        print("Table cleared")
+
     def update_data(
-        self, file_name, last_updated, last_mode, chunk, predchunk, metainfo
+        self,
+        file_name: str,
+        last_updated: datetime,
+        last_mode: str,
+        chunk: dict,
+        predchunk: str,
+        metainfo: dict,
     ):
         """
         Функция для обновления данных в базе данных
@@ -73,21 +112,21 @@ class Rabbit:
         )
         self.conn.commit()
 
-    def update_predchunk(self, last_updated, predchunk):
+    def update_predchunk(self, last_updated: datetime, predchunk: str, last_mode: str):
         """
         Функция для обновления предсказанных классов в базе данных
         """
         self.cursor.execute(
             """
         UPDATE data
-        SET predchunk = ?
+        SET predchunk = ?, last_mode = ?
         WHERE last_updated = ?
         """,
-            (json.dumps(predchunk), last_updated),
+            (json.dumps(predchunk), json.dumps(last_mode), last_updated),
         )
         self.conn.commit()
 
-    def get_data_by_name(self, file_name):
+    def get_data_by_name(self, file_name: str):
         """
         Функция для получения данных из базы данных
         """
@@ -100,7 +139,20 @@ class Rabbit:
         )
         return self.cursor.fetchone()
 
-    def get_info_from_rabbitmq(self, data):
+    def insert_annotation(self, time, annotation: str):
+        """
+        Функция для добавления аннотаций в базу данных
+        """
+        self.cursor_annotation.execute(
+            """
+        INSERT INTO annotation (time, annotation)
+        VALUES (?, ?)
+        """,
+            (time, annotation),
+        )
+        self.conn_annotation.commit()
+
+    def get_info_from_rabbitmq(self, data: dict) -> str:
         """
         Функция для сохранения данных из RabbitMQ в базу данных
         """
@@ -119,9 +171,9 @@ class Rabbit:
                 {"age": data["age"], "pharm": data["pharm"]},
             )
         print("Data inserted")
-        self.predict_classes(last_updated)
+        return self.predict_classes()
 
-    def predict_classes(self, last_updated):
+    def predict_classes(self) -> str:
         """
         Функция для предсказания классов
         """
@@ -135,13 +187,20 @@ class Rabbit:
         predchunk = json.loads(row[3])
         metainfo = json.loads(row[4])
         print("Data loaded")
+        result = self.ml.predict(predchunk, chunk, metainfo, last_mode)
+        if result["y"] != "none":
+            self.update_predchunk(last_updated, result["y"], result["mode"])
+            self.insert_annotation(result["x"], result["y"])
+        return result["y"]
 
-    def process_data(self, data):
-        self.get_info_from_rabbitmq(data)
-        result = data
+    def process_data(self, data: dict) -> str:
+        result = self.get_info_from_rabbitmq(data)
         return result
 
     def consume_data(self):
+        """
+        Функция для получения данных
+        """
         connection = pika.BlockingConnection(pika.ConnectionParameters("localhost"))
         channel = connection.channel()
         channel.queue_declare(queue="data_queue")
@@ -149,6 +208,8 @@ class Rabbit:
         def callback(ch, method, properties, body):
             print(f" [x] Received {body}")
             result = self.process_data(body)
+            print(result)
+            result = result.encode()
             channel.basic_publish(
                 exchange="",
                 routing_key=properties.reply_to,

@@ -1,3 +1,6 @@
+"""
+RPC клиент для общения с RabbitMQ
+"""
 import copy
 import uuid
 import pika
@@ -53,5 +56,5 @@ def external_function(data, vectors):
     message = json.dumps(full_message)
     response = client.send_data_and_get_result(message.encode())
     print(f"Received response: {response.decode()}")
-    temp_data = json.loads(response.decode())
-    return temp_data["chunk"]
+    temp_data = response.decode()
+    return temp_data

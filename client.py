@@ -1,3 +1,6 @@
+"""
+Клиент для тестирования отправки данных и получения с сервера
+"""
 import grpc
 import cardio_pb2
 import cardio_pb2_grpc
@@ -11,8 +14,9 @@ def run():
         )
         print(f"SetWorkingDirectory response: {response.success}")
         request = cardio_pb2.SetFileToProcessRequest(
-            file_to_process="data/Ati4x1_15m_BL_6h.edf"
+            # file_to_process="data/Ati4x1_15m_BL_6h.edf"
             # file_to_process="data/Ati4x1_15m_BL_6h_fully_marked.edf"
+            file_to_process="data/Ati4x1_15m_H2O_6h.edf"
         )
         # request = cardio_pb2.SetFileToProcessRequest(file_to_process="data/Ati4x1_15m_BL_6h.edf")
         response = stub.SetFileToProcess(request)
@@ -27,7 +31,8 @@ def run():
 
         for response in responses:
             print(
-                f"Received data at timestamp {response.timestamp} with vector: {response.vector1}..."
+                f"Received data at timestamp {response.timestamp[:5]} with class: {response.annotation}, "
+                f"with vector: {response.vector1[:5]}..."
             )
 
 

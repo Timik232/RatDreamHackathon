@@ -1,3 +1,6 @@
+"""
+ML модуль
+"""
 import os
 
 import numpy as np
@@ -32,11 +35,12 @@ class MLModels:
         else:
             self.current_model = self.model_end
 
-        pred = self.current_model.predict(data)
+        pred = self.current_model.predict(data.reshape(1, -1))
+        pred = list(pred)[0]
 
         if pred != "none" and mode == "start":
             mode = "end"
         elif pred != "none":
             mode = "start"
 
-        return {"x": np.mean(chunk["x"][750]), "y": pred, "mode": mode}
+        return {"x": np.mean(chunk["x"][750]) / 400, "y": pred, "mode": mode}
