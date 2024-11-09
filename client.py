@@ -11,8 +11,8 @@ def run():
         )
         print(f"SetWorkingDirectory response: {response.success}")
         request = cardio_pb2.SetFileToProcessRequest(
-            # file_to_process="data/Ati4x1_15m_BL_6h.edf"
-            file_to_process="data/Ati4x1_15m_BL_6h_fully_marked.edf"
+            file_to_process="data/Ati4x1_15m_BL_6h.edf"
+            # file_to_process="data/Ati4x1_15m_BL_6h_fully_marked.edf"
         )
         # request = cardio_pb2.SetFileToProcessRequest(file_to_process="data/Ati4x1_15m_BL_6h.edf")
         response = stub.SetFileToProcess(request)
@@ -22,7 +22,8 @@ def run():
         # response = stub.SetFileToProcess(request)
         # print(f"SetFileToProcess response: {response.success}")
         request = cardio_pb2.CardioRequest()
-        responses = stub.StreamAnnotatedData(request)
+        # responses = stub.StreamAnnotatedData(request)
+        responses = stub.StreamCardioData(request)
 
         for response in responses:
             print(

@@ -12,7 +12,7 @@ import pyedflib
 import cardio_pb2
 import cardio_pb2_grpc
 from RPCclient import external_function
-from rabbit import consume_data
+from rabbit import init_rabbit
 
 
 def get_age_pharm(data: dict) -> tuple:
@@ -215,6 +215,6 @@ def serve():
 
 
 if __name__ == "__main__":
-    consumer_thread = threading.Thread(target=consume_data, daemon=True)
+    consumer_thread = threading.Thread(target=init_rabbit, daemon=True)
     consumer_thread.start()
     serve()
