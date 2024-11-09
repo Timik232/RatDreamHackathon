@@ -2,6 +2,7 @@ import copy
 import math
 import os
 import random
+import numpy as np
 import time
 from concurrent import futures
 from typing import Optional
@@ -30,8 +31,8 @@ class ECGSimulator:
         # self.vectors = list(self.edf_data["data"].values())
         self.edf_data = {}
         self.vectors = []
-        self.slice = 10
-        self.previous_slice = 0
+        self.step = 400
+        self.slice = 1000
         self.working_directory = "output"
         self.number_to_save = 0
 
@@ -39,22 +40,23 @@ class ECGSimulator:
         """
         Потоковая передача данных ЭКГ клиенту.
         """
-        while True:
-            timestamp = int(time.time())
+        timestamps = np.linspace(0, self.edf_data["duration"], self.vectors[0].shape[0])
+        for i in range(0, self.vectors[0].shape[0], self.step):
+            if i + self.slice > self.vectors[0].shape[0]:
+                break
+            timestamp = list(timestamps[i : i + self.slice])
             sliced_vectors = [
-                list(vector[self.previous_slice : self.previous_slice + self.slice])
-                for vector in self.vectors
+                list(vector[i : i + self.slice]) for vector in self.vectors
             ]
-            self.previous_slice += self.slice
-            # sliced_vectors = external_function(sliced_vectors)
-            print(sliced_vectors)
+            return_data = sliced_vectors
+            # return_data = external_function(self.edf_data, sliced_vectors)
+            print(return_data)
             cardio_data = cardio_pb2.CardioData(
                 timestamp=timestamp,
-                vector1=sliced_vectors[0],
-                vector2=sliced_vectors[1],
-                vector3=sliced_vectors[2],
+                vector1=return_data[0],
+                vector2=return_data[1],
+                vector3=return_data[2],
             )
-            # self.save_edf_file(self.edf_data)
             yield cardio_data
 
     def SetWorkingDirectory(self, request, context):
@@ -84,7 +86,13 @@ class ECGSimulator:
             print(f"Error setting file to process: {e}")
             return cardio_pb2.SetFileToProcessResponse(success=False)
         age, pharm = get_age_pharm(self.edf_data)
+        self.edf_data["age"] = age
+        self.edf_data["pharm"] = pharm
         labels = list(self.edf_data["data"].keys())
+        if "annotations" in self.edf_data.keys():
+            annotation = True
+        else:
+            annotation = False
         return cardio_pb2.SetFileToProcessResponse(
             success=True,
             age=age,
@@ -92,7 +100,46 @@ class ECGSimulator:
             label1=labels[0],
             label2=labels[1],
             label3=labels[2],
+            is_annotated=annotation,
         )
+
+    def StreamAnnotatedData(self, request, context):
+        """
+        Потоковая передача аннотированных данных клиенту.
+        """
+        time_to_change = 0
+        change_number = 0
+        timestamps = np.linspace(0, self.edf_data["duration"], self.vectors[0].shape[0])
+        if "annotations" in self.edf_data.keys():
+            for i in range(0, self.vectors[0].shape[0], self.step):
+                if i + self.slice > self.vectors[0].shape[0]:
+                    break
+                timestamp = list(timestamps[i : i + self.slice])
+                time_to_change += 2.5
+                sliced_vectors = [
+                    list(vector[i : i + self.slice]) for vector in self.vectors
+                ]
+                if time_to_change > self.edf_data["annotations"][0][change_number]:
+                    if (
+                        time_to_change - self.edf_data["annotations"][0][change_number]
+                        > 1
+                    ):
+                        change_number += 1
+                        annotated_class = self.edf_data["annotations"][2][change_number]
+                    else:
+                        annotated_class = self.edf_data["annotations"][2][change_number]
+                        change_number += 1
+                else:
+                    annotated_class = self.edf_data["annotations"][2][change_number]
+
+                cardio_data = cardio_pb2.CardioData(
+                    timestamp=timestamp,
+                    vector1=sliced_vectors[0],
+                    vector2=sliced_vectors[1],
+                    vector3=sliced_vectors[2],
+                    annotation=annotated_class,
+                )
+                yield cardio_data
 
     def save_edf_file(self, data: dict):
         """
@@ -134,12 +181,20 @@ class ECGSimulator:
             header = f.getHeader()
             signal_labels = f.getSignalLabels()
             signals = [f.readSignal(i) for i in range(f.signals_in_file)]
-
+            duration = f.getFileDuration()
+            annotations = f.readAnnotations()
+            if len(annotations[0]) == 0:
+                print("No annotations found.")
+                annotations = None
         data = {}
+        if annotations is not None:
+            data["annotations"] = annotations
+            print(annotations)
         data_buf = dict(zip(signal_labels, signals))
         data["data"] = data_buf
         data["header"] = header
         data["file_name"] = os.path.basename(file_path)
+        data["duration"] = duration
         return data
 
 

@@ -1,3 +1,4 @@
+import copy
 import uuid
 import pika
 import json
@@ -43,9 +44,11 @@ class RpcClient:
         return self.response
 
 
-def external_function(data):
+def external_function(data, vectors):
     client = RpcClient()
-    message = json.dumps(data)
+    full_message = copy.deepcopy(data)
+    full_message["chunk"] = vectors
+    message = json.dumps(full_message)
     response = client.send_data_and_get_result(message.encode())
     print(f"Received response: {response.decode()}")
     return json.loads(response.decode())

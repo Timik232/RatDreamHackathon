@@ -29,6 +29,11 @@ class CardioServiceStub(object):
                 request_serializer=cardio__pb2.SetFileToProcessRequest.SerializeToString,
                 response_deserializer=cardio__pb2.SetFileToProcessResponse.FromString,
                 )
+        self.StreamAnnotatedData = channel.unary_stream(
+                '/cardio.CardioService/StreamAnnotatedData',
+                request_serializer=cardio__pb2.CardioRequest.SerializeToString,
+                response_deserializer=cardio__pb2.CardioData.FromString,
+                )
 
 
 class CardioServiceServicer(object):
@@ -52,6 +57,12 @@ class CardioServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def StreamAnnotatedData(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_CardioServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -69,6 +80,11 @@ def add_CardioServiceServicer_to_server(servicer, server):
                     servicer.SetFileToProcess,
                     request_deserializer=cardio__pb2.SetFileToProcessRequest.FromString,
                     response_serializer=cardio__pb2.SetFileToProcessResponse.SerializeToString,
+            ),
+            'StreamAnnotatedData': grpc.unary_stream_rpc_method_handler(
+                    servicer.StreamAnnotatedData,
+                    request_deserializer=cardio__pb2.CardioRequest.FromString,
+                    response_serializer=cardio__pb2.CardioData.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -125,5 +141,21 @@ class CardioService(object):
         return grpc.experimental.unary_unary(request, target, '/cardio.CardioService/SetFileToProcess',
             cardio__pb2.SetFileToProcessRequest.SerializeToString,
             cardio__pb2.SetFileToProcessResponse.FromString,
+            options, channel_credentials,
+            call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def StreamAnnotatedData(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_stream(request, target, '/cardio.CardioService/StreamAnnotatedData',
+            cardio__pb2.CardioRequest.SerializeToString,
+            cardio__pb2.CardioData.FromString,
             options, channel_credentials,
             call_credentials, compression, wait_for_ready, timeout, metadata)
