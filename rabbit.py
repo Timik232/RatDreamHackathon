@@ -3,6 +3,7 @@ import time
 import threading
 import sqlite3
 import json
+import datetime
 
 
 conn = sqlite3.connect("RatDream.db")
@@ -22,7 +23,7 @@ CREATE TABLE IF NOT EXISTS data (
 
 
 def get_mode(data):
-    return data
+    return "start"
 
 
 def insert_data(file_name, last_updated, last_mode, chunk, predchunk, metainfo):
@@ -68,7 +69,22 @@ def update_data(file_name, last_updated, last_mode, chunk, predchunk, metainfo):
     conn.commit()
 
 
-def get_data(file_name):
+def update_predchunk(last_updated, predchunk):
+    """
+    Функция для обновления предсказанных классов в базе данных
+    """
+    cursor.execute(
+        """
+    UPDATE data
+    SET predchunk = ?
+    WHERE last_updated = ?
+    """,
+        (json.dumps(predchunk), last_updated),
+    )
+    conn.commit()
+
+
+def get_data_by_name(file_name):
     """
     Функция для получения данных из базы данных
     """
@@ -87,31 +103,39 @@ def get_info_from_rabbitmq(data):
     Функция для сохранения данных из RabbitMQ в базу данных
     """
     data = json.loads(data)
-    is_exist = get_data(data.file_name)
-    last_updated = time.time()
+    is_exist = get_data_by_name(data.file_name)
+    last_updated = datetime.datetime.now()
     last_mode = get_mode(data)
-
+    predchunk = "ds1"
     if not is_exist:
         insert_data(
             data["file_name"],
-            last_updated,
+            str(last_updated),
             last_mode,
             data["chunk"],
-            data.predchunk,
-            data.metainfo,
+            predchunk,
+            {"age": data["age"], "pharm": data["pharm"]},
         )
+    predict_classes(last_updated)
 
-    predict_classes(data.time)
 
-
-def predict_classes(time):
-    pass
+def predict_classes(last_updated):
+    """
+    Функция для предсказания классов
+    """
+    cursor.execute(
+        "SELECT last_updated, last_mode, chunk, predchunk, metainfo FROM data ORDER BY id DESC LIMIT 1"
+    )
+    row = cursor.fetchone()
+    last_updated = row[0]
+    last_mode = row[1]
+    chunk = json.loads(row[2])
+    predchunk = json.loads(row[3])
+    metainfo = json.loads(row[4])
 
 
 def process_data(data):
     get_info_from_rabbitmq(data)
-    predict_classes(time)
-
     result = data
     return result
 

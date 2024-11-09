@@ -1,11 +1,8 @@
 import copy
-import math
 import os
-import random
 import numpy as np
 import time
 from concurrent import futures
-from typing import Optional
 import threading
 import re
 
@@ -21,8 +18,14 @@ from rabbit import consume_data
 def get_age_pharm(data: dict) -> tuple:
     splitted = data["file_name"].split("_")
     age = re.sub(r"[\D]+", "", splitted[1])
+    if "m" in splitted[1]:
+        is_male = True
+    elif "f" in splitted[1]:
+        is_male = False
+    else:
+        is_male = True
     pharm = True if "Pharm!" in data else False
-    return age, pharm
+    return age, pharm, is_male
 
 
 class ECGSimulator:
@@ -49,13 +52,14 @@ class ECGSimulator:
                 list(vector[i : i + self.slice]) for vector in self.vectors
             ]
             return_data = sliced_vectors
-            # return_data = external_function(self.edf_data, sliced_vectors)
+            return_data = external_function(self.edf_data, sliced_vectors)
             print(return_data)
             cardio_data = cardio_pb2.CardioData(
                 timestamp=timestamp,
                 vector1=return_data[0],
                 vector2=return_data[1],
                 vector3=return_data[2],
+                annotation="ds1"
             )
             yield cardio_data
 
@@ -85,7 +89,7 @@ class ECGSimulator:
         except Exception as e:
             print(f"Error setting file to process: {e}")
             return cardio_pb2.SetFileToProcessResponse(success=False)
-        age, pharm = get_age_pharm(self.edf_data)
+        age, pharm, is_male = get_age_pharm(self.edf_data)
         self.edf_data["age"] = age
         self.edf_data["pharm"] = pharm
         labels = list(self.edf_data["data"].keys())
@@ -97,6 +101,7 @@ class ECGSimulator:
             success=True,
             age=age,
             pharm=pharm,
+            is_male=is_male,
             label1=labels[0],
             label2=labels[1],
             label3=labels[2],
