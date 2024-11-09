@@ -6,6 +6,7 @@ from concurrent import futures
 import random
 import pyedflib
 from typing import Optional
+import copy
 
 import cardio_pb2
 import cardio_pb2_grpc
@@ -17,7 +18,7 @@ class ECGSimulator:
         self.vector = list(self.edf_data["data"]["FrL"])
         self.slice = 10
         self.previous_slice = 0
-        self.working_directory: Optional[str] = None
+        self.working_directory = "output"
         self.number_to_save = 0
 
     def StreamCardioData(self, request, context):
@@ -30,14 +31,15 @@ class ECGSimulator:
             vector = self.vector[self.previous_slice : self.previous_slice + self.slice]
             self.previous_slice += self.slice
             # Логирование отправляемых данных
+            vector = self.process_data(vector)
             print(
                 f"Sending data at timestamp {timestamp} with vector: {vector[:5]}..."
             )  # Выводим первые 5 значений для краткости
 
             # Создаем и отправляем сообщение-ответ
             cardio_data = cardio_pb2.CardioData(timestamp=timestamp, vector=vector)
+            self.save_edf_file(self.edf_data)
             yield cardio_data
-            time.sleep(0.5)  # Задержка для имитации передачи в реальном времени
 
     def SetWorkingDirectory(self, request, context):
         try:
@@ -52,6 +54,11 @@ class ECGSimulator:
             print(f"Error setting working directory: {e}")
             return cardio_pb2.SetWorkingDirectoryResponse(success=False)
 
+    def process_data(self, data):
+        print("Processing data...")
+        # Обработка данных
+        return data
+
     def save_edf_file(self, data: dict):
         """
         Сохранение данных в файл EDF.
@@ -59,19 +66,20 @@ class ECGSimulator:
         Args:
             data (dict): Данные для сохранения в файле EDF.
         """
-        if self.working_directory is None:
-            raise Exception("Working directory is not set.")
-        else:
-            file_path = os.path.join(
-                self.working_directory, f"ecg_output{self.number_to_save}.edf"
-            )
-            self.number_to_save += 1
-            with pyedflib.EdfWriter(
-                file_path, len(data["data"]), file_type=pyedflib.FILETYPE_EDFPLUS
-            ) as f:
-                f.setHeader(data["header"])
-                f.setSignalHeaders(data["data"].keys())
-                f.writeSamples(list(data["data"]()))
+        file_path = os.path.join(
+            self.working_directory, f"ecg_output{self.number_to_save}.edf"
+        )
+        self.number_to_save += 1
+        data_to_write = copy.deepcopy(data)
+        with pyedflib.EdfWriter(
+            file_path,
+            len(data_to_write["data"]),
+            file_type=pyedflib.FILETYPE_EDFPLUS,
+        ) as f:
+            f.setHeader(data_to_write["header"])
+            f.setSignalHeaders([{"label": label} for label in data_to_write["data"].keys()])
+            samples = [data_to_write["data"][label] for label in data_to_write["data"].keys()]
+            f.writeSamples(samples)
 
     def read_edf_file(self, file_path: str):
         """
