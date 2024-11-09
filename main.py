@@ -5,17 +5,21 @@ import random
 import time
 from concurrent import futures
 from typing import Optional
+import threading
 
 import grpc
 import pyedflib
 
 import cardio_pb2
 import cardio_pb2_grpc
+from RPCclient import external_function
+from rabbit import consume_data
 
 
 class ECGSimulator:
     def __init__(self):
         self.edf_data = self.read_edf_file("data/Ati4x1_15m_BL_6h.edf")
+        # print(self.edf_data)
         self.vectors = list(self.edf_data["data"].values())
         self.slice = 10
         self.previous_slice = 0
@@ -31,11 +35,12 @@ class ECGSimulator:
         while True:
             timestamp = int(time.time())
             sliced_vectors = [
-                vector[self.previous_slice : self.previous_slice + self.slice]
+                list(vector[self.previous_slice : self.previous_slice + self.slice])
                 for vector in self.vectors
             ]
             self.previous_slice += self.slice
-            sliced_vectors = self.process_data(sliced_vectors)
+            sliced_vectors = external_function(sliced_vectors)
+            print(sliced_vectors)
             cardio_data = cardio_pb2.CardioData(
                 timestamp=timestamp,
                 vector1=sliced_vectors[0],
@@ -44,7 +49,6 @@ class ECGSimulator:
             )
             # self.save_edf_file(self.edf_data)
             yield cardio_data
-            time.sleep(0.03)
 
     def SetWorkingDirectory(self, request, context):
         """
@@ -178,4 +182,7 @@ def serve():
 
 
 if __name__ == "__main__":
+    consumer_thread = threading.Thread(target=consume_data, daemon=True)
+    consumer_thread.start()
+    external_function([[1, 2, 3], [1, 2, 3]])
     serve()
