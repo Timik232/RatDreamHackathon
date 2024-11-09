@@ -136,7 +136,7 @@ class ECGSimulator:
                         change_number += 1
                 else:
                     annotated_class = self.edf_data["annotations"][2][change_number]
-
+                annotated_class = str(annotated_class)
                 cardio_data = cardio_pb2.CardioData(
                     timestamp=timestamp,
                     vector1=sliced_vectors[0],
@@ -194,7 +194,7 @@ class ECGSimulator:
         data = {}
         if annotations is not None:
             data["annotations"] = annotations
-            print(annotations)
+            # print(annotations)
         data_buf = dict(zip(signal_labels, signals))
         data["data"] = data_buf
         data["header"] = header

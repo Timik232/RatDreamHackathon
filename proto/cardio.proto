@@ -14,7 +14,7 @@ message CardioRequest {
 }
 
 message CardioData {
-  repeated int32 timestamp = 1;
+  repeated float timestamp = 1;
   repeated float vector1 = 2;
   repeated float vector2 = 3;
   repeated float vector3 = 4;

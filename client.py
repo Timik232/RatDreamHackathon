@@ -21,13 +21,13 @@ def run():
         # request = cardio_pb2.SetFileToProcessRequest(file_to_process="data/Ati4x1_15m_BL_6h.edf")
         # response = stub.SetFileToProcess(request)
         # print(f"SetFileToProcess response: {response.success}")
-        # request = cardio_pb2.CardioRequest()
-        # responses = stub.StreamCardioData(request)
+        request = cardio_pb2.CardioRequest()
+        responses = stub.StreamAnnotatedData(request)
 
-        # for response in responses:
-        #     print(
-        #         f"Received data at timestamp {response.timestamp} with vector: {response.vector1}..."
-        #     )
+        for response in responses:
+            print(
+                f"Received data at timestamp {response.timestamp} with vector: {response.vector1}..."
+            )
 
 
 if __name__ == "__main__":
