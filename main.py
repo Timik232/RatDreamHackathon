@@ -1,3 +1,4 @@
+import math
 import time
 import grpc
 from concurrent import futures
@@ -8,40 +9,56 @@ import cardio_pb2
 import cardio_pb2_grpc
 
 
-class CardioService(cardio_pb2_grpc.CardioServiceServicer):
+class ECGSimulator:
     def StreamCardioData(self, request, context):
         print(f"Client {request.client_id} connected.")
 
         while True:
-            # Generate ECG data as a vector of float values
+            # Генерируем данные ЭКГ в виде вектора
             timestamp = int(time.time())
             vector = self.generate_ecg_vector()
 
-            # Log the data being sent
+            # Логирование отправляемых данных
             print(
                 f"Sending data at timestamp {timestamp} with vector: {vector[:5]}..."
-            )  # Print first 5 values for brevity
+            )  # Выводим первые 5 значений для краткости
 
-            # Create and send the response message
+            # Создаем и отправляем сообщение-ответ
             cardio_data = cardio_pb2.CardioData(timestamp=timestamp, vector=vector)
             yield cardio_data
-            time.sleep(0.5)  # Delay to simulate real-time data
+            time.sleep(0.5)  # Задержка для имитации передачи в реальном времени
 
-    def generate_ecg_vector(self):
-        """Simulate a simple sinusoidal ECG-like waveform with added noise."""
+    def generate_ecg_vector(self, num_points=5):
+        """
+        Симуляция простой синусоидальной ЭКГ с добавлением шума.
+
+        Args:
+            num_points (int): Количество точек данных для генерации ЭКГ.
+
+        Returns:
+            list: Список y-значений, представляющих ЭКГ-сигнал.
+        """
         vector = []
-        for i in range(100):  # Generate 100 points for a single waveform cycle
-            # Create a sinusoidal wave with random noise
-            value = 1.0 * (i % 25) - 12.5  # Base wave
-            noise = random.uniform(-2, 2)  # Add some noise
-            vector.append(value + noise)
+        phase_shift = random.uniform(
+            0, 2 * math.pi
+        )  # случайный сдвиг фазы для вариации
+
+        for i in range(num_points):
+            # Генерация синусоидального сигнала
+            base_wave = math.sin(i * 0.1 + phase_shift) * 1.5  # 1.5 — амплитуда
+            # Добавление шума от -0.5 до 0.3
+            noise = random.uniform(-0.5, 0.3)
+            # Итоговое значение с добавлением шума
+            y_value = base_wave + noise
+            vector.append(y_value)
+
         return vector
 
 
 def serve():
     # Initialize the server
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    cardio_pb2_grpc.add_CardioServiceServicer_to_server(CardioService(), server)
+    cardio_pb2_grpc.add_CardioServiceServicer_to_server(ECGSimulator(), server)
 
     # Bind to a port
     server.add_insecure_port("[::]:50051")
