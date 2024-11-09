@@ -37,9 +37,8 @@ message SetFileToProcessResponse {
   bool success = 1;
   string age = 2;
   bool pharm = 3;
-  bool is_male = 4;
-  string label1 = 5;
-  string label2 = 6;
-  string label3 = 7;
-  bool is_annotated = 8;
+  string label1 = 4;
+  string label2 = 5;
+  string label3 = 6;
+  bool is_annotated = 7;
 }

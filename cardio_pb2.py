@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x0c\x63\x61rdio.proto\x12\x06\x63\x61rdio\"\x0f\n\rCardioRequest\"f\n\nCardioData\x12\x11\n\ttimestamp\x18\x01 \x03(\x02\x12\x0f\n\x07vector1\x18\x02 \x03(\x02\x12\x0f\n\x07vector2\x18\x03 \x03(\x02\x12\x0f\n\x07vector3\x18\x04 \x03(\x02\x12\x12\n\nannotation\x18\x05 \x01(\t\"7\n\x1aSetWorkingDirectoryRequest\x12\x19\n\x11working_directory\x18\x01 \x01(\t\".\n\x1bSetWorkingDirectoryResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\"2\n\x17SetFileToProcessRequest\x12\x17\n\x0f\x66ile_to_process\x18\x01 \x01(\t\"\x9e\x01\n\x18SetFileToProcessResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0b\n\x03\x61ge\x18\x02 \x01(\t\x12\r\n\x05pharm\x18\x03 \x01(\x08\x12\x0f\n\x07is_male\x18\x04 \x01(\x08\x12\x0e\n\x06label1\x18\x05 \x01(\t\x12\x0e\n\x06label2\x18\x06 \x01(\t\x12\x0e\n\x06label3\x18\x07 \x01(\t\x12\x14\n\x0cis_annotated\x18\x08 \x01(\x08\x32\xcb\x02\n\rCardioService\x12?\n\x10StreamCardioData\x12\x15.cardio.CardioRequest\x1a\x12.cardio.CardioData0\x01\x12^\n\x13SetWorkingDirectory\x12\".cardio.SetWorkingDirectoryRequest\x1a#.cardio.SetWorkingDirectoryResponse\x12U\n\x10SetFileToProcess\x12\x1f.cardio.SetFileToProcessRequest\x1a .cardio.SetFileToProcessResponse\x12\x42\n\x13StreamAnnotatedData\x12\x15.cardio.CardioRequest\x1a\x12.cardio.CardioData0\x01\x62\x06proto3'
+  serialized_pb=b'\n\x0c\x63\x61rdio.proto\x12\x06\x63\x61rdio\"\x0f\n\rCardioRequest\"f\n\nCardioData\x12\x11\n\ttimestamp\x18\x01 \x03(\x02\x12\x0f\n\x07vector1\x18\x02 \x03(\x02\x12\x0f\n\x07vector2\x18\x03 \x03(\x02\x12\x0f\n\x07vector3\x18\x04 \x03(\x02\x12\x12\n\nannotation\x18\x05 \x01(\t\"7\n\x1aSetWorkingDirectoryRequest\x12\x19\n\x11working_directory\x18\x01 \x01(\t\".\n\x1bSetWorkingDirectoryResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\"2\n\x17SetFileToProcessRequest\x12\x17\n\x0f\x66ile_to_process\x18\x01 \x01(\t\"\x8d\x01\n\x18SetFileToProcessResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0b\n\x03\x61ge\x18\x02 \x01(\t\x12\r\n\x05pharm\x18\x03 \x01(\x08\x12\x0e\n\x06label1\x18\x04 \x01(\t\x12\x0e\n\x06label2\x18\x05 \x01(\t\x12\x0e\n\x06label3\x18\x06 \x01(\t\x12\x14\n\x0cis_annotated\x18\x07 \x01(\x08\x32\xcb\x02\n\rCardioService\x12?\n\x10StreamCardioData\x12\x15.cardio.CardioRequest\x1a\x12.cardio.CardioData0\x01\x12^\n\x13SetWorkingDirectory\x12\".cardio.SetWorkingDirectoryRequest\x1a#.cardio.SetWorkingDirectoryResponse\x12U\n\x10SetFileToProcess\x12\x1f.cardio.SetFileToProcessRequest\x1a .cardio.SetFileToProcessResponse\x12\x42\n\x13StreamAnnotatedData\x12\x15.cardio.CardioRequest\x1a\x12.cardio.CardioData0\x01\x62\x06proto3'
 )
 
 
@@ -236,36 +236,29 @@ _SETFILETOPROCESSRESPONSE = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='is_male', full_name='cardio.SetFileToProcessResponse.is_male', index=3,
-      number=4, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
+      name='label1', full_name='cardio.SetFileToProcessResponse.label1', index=3,
+      number=4, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='label1', full_name='cardio.SetFileToProcessResponse.label1', index=4,
+      name='label2', full_name='cardio.SetFileToProcessResponse.label2', index=4,
       number=5, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='label2', full_name='cardio.SetFileToProcessResponse.label2', index=5,
+      name='label3', full_name='cardio.SetFileToProcessResponse.label3', index=5,
       number=6, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='label3', full_name='cardio.SetFileToProcessResponse.label3', index=6,
-      number=7, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='is_annotated', full_name='cardio.SetFileToProcessResponse.is_annotated', index=7,
-      number=8, type=8, cpp_type=7, label=1,
+      name='is_annotated', full_name='cardio.SetFileToProcessResponse.is_annotated', index=6,
+      number=7, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -283,7 +276,7 @@ _SETFILETOPROCESSRESPONSE = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=303,
-  serialized_end=461,
+  serialized_end=444,
 )
 
 DESCRIPTOR.message_types_by_name['CardioRequest'] = _CARDIOREQUEST
@@ -345,8 +338,8 @@ _CARDIOSERVICE = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=464,
-  serialized_end=795,
+  serialized_start=447,
+  serialized_end=778,
   methods=[
   _descriptor.MethodDescriptor(
     name='StreamCardioData',

@@ -18,14 +18,8 @@ from rabbit import consume_data
 def get_age_pharm(data: dict) -> tuple:
     splitted = data["file_name"].split("_")
     age = re.sub(r"[\D]+", "", splitted[1])
-    if "m" in splitted[1]:
-        is_male = True
-    elif "f" in splitted[1]:
-        is_male = False
-    else:
-        is_male = True
     pharm = True if "Pharm!" in data else False
-    return age, pharm, is_male
+    return age, pharm
 
 
 class ECGSimulator:
@@ -89,7 +83,7 @@ class ECGSimulator:
         except Exception as e:
             print(f"Error setting file to process: {e}")
             return cardio_pb2.SetFileToProcessResponse(success=False)
-        age, pharm, is_male = get_age_pharm(self.edf_data)
+        age, pharm = get_age_pharm(self.edf_data)
         self.edf_data["age"] = age
         self.edf_data["pharm"] = pharm
         labels = list(self.edf_data["data"].keys())
@@ -101,7 +95,6 @@ class ECGSimulator:
             success=True,
             age=age,
             pharm=pharm,
-            is_male=is_male,
             label1=labels[0],
             label2=labels[1],
             label3=labels[2],

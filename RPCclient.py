@@ -48,7 +48,10 @@ def external_function(data, vectors):
     client = RpcClient()
     full_message = copy.deepcopy(data)
     full_message["chunk"] = vectors
+    del full_message["data"]
+    del full_message["header"]
     message = json.dumps(full_message)
     response = client.send_data_and_get_result(message.encode())
     print(f"Received response: {response.decode()}")
-    return json.loads(response.decode())
+    temp_data = json.loads(response.decode())
+    return temp_data["chunk"]
