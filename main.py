@@ -66,7 +66,6 @@ class ECGSimulator:
                 x_annotation=return_data["x"],
             )
             yield cardio_data
-            time.sleep(0.01)
         self.save_edf_file(self.edf_data)
 
     def SetWorkingDirectory(self, request, context):
@@ -155,6 +154,7 @@ class ECGSimulator:
                     x_annotation=x_annotation,
                 )
                 yield cardio_data
+                time.sleep(0.1)
 
     def save_edf_file(self, data: dict):
         """
