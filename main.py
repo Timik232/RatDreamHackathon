@@ -1,4 +1,5 @@
 import copy
+import sqlite3
 import os
 import numpy as np
 import time
@@ -64,10 +65,11 @@ class ECGSimulator:
                 x_annotation=return_data["x"],
             )
             yield cardio_data
+        self.save_edf_file(self.edf_data)
 
     def SetWorkingDirectory(self, request, context):
         """
-        Установка рабочего каталога для сохранения файлов.
+        Сохранение файла в рабочую директорию.
         """
         try:
             if not os.path.exists(request.working_directory):
@@ -76,6 +78,7 @@ class ECGSimulator:
                 if not os.path.isdir(request.working_directory):
                     raise Exception("Path is not a directory.")
             self.working_directory = request.working_directory
+            self.save_edf_file(self.edf_data)
             return cardio_pb2.SetWorkingDirectoryResponse(success=True)
         except Exception as e:
             print(f"Error setting working directory: {e}")
@@ -131,11 +134,14 @@ class ECGSimulator:
                         > 1
                     ):
                         change_number += 1
+                        x_annotation = self.edf_data["annotations"][0][change_number]
                         annotated_class = self.edf_data["annotations"][2][change_number]
                     else:
+                        x_annotation = self.edf_data["annotations"][0][change_number]
                         annotated_class = self.edf_data["annotations"][2][change_number]
                         change_number += 1
                 else:
+                    x_annotation = self.edf_data["annotations"][0][change_number]
                     annotated_class = self.edf_data["annotations"][2][change_number]
                 annotated_class = str(annotated_class)
                 cardio_data = cardio_pb2.CardioData(
@@ -144,6 +150,7 @@ class ECGSimulator:
                     vector2=sliced_vectors[1],
                     vector3=sliced_vectors[2],
                     annotation=annotated_class,
+                    x_annotation=x_annotation,
                 )
                 yield cardio_data
 
@@ -172,6 +179,30 @@ class ECGSimulator:
                 data_to_write["data"][label] for label in data_to_write["data"].keys()
             ]
             f.writeSamples(samples)
+            if not "annotations" in data_to_write.keys():
+                conn = sqlite3.connect("Annotations.db")
+                cursor = conn.cursor()
+                # read all data from the table
+                try:
+                    cursor.execute(
+                        """
+                    SELECT * FROM annotation
+                    """
+                    )
+                    annotations = cursor.fetchall()
+                    for annotation in annotations:
+                        f.writeAnnotation(annotation[1], -1, annotation[2])
+                    print(f"Writed with annotations. to {file_path}")
+                except Exception as e:
+                    print(f"Error reading annotations: {e}")
+            else:
+                for i in range(len(data_to_write["annotations"][0])):
+                    f.writeAnnotation(
+                        data_to_write["annotations"][0][i],
+                        data_to_write["annotations"][1][i],
+                        data_to_write["annotations"][2][i],
+                    )
+                print(f"Writed with annotations. to {file_path}")
 
     def read_edf_file(self, file_path: str):
         """
