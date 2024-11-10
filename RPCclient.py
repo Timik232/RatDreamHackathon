@@ -1,10 +1,13 @@
 """
 RPC клиент для общения с RabbitMQ
 """
+
 import copy
 import uuid
 import pika
 import json
+
+
 class RpcClient:
     def __init__(self):
         self.connection = pika.BlockingConnection(
@@ -47,7 +50,7 @@ class RpcClient:
         return self.response
 
 
-def external_function(data, vectors):
+def external_function(data, vectors) -> dict:
     client = RpcClient()
     full_message = copy.deepcopy(data)
     full_message["chunk"] = vectors
@@ -56,5 +59,5 @@ def external_function(data, vectors):
     message = json.dumps(full_message)
     response = client.send_data_and_get_result(message.encode())
     print(f"Received response: {response.decode()}")
-    temp_data = response.decode()
+    temp_data = json.loads(response.decode())
     return temp_data
