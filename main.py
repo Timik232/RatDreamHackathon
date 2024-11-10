@@ -46,6 +46,7 @@ class ECGSimulator:
         Потоковая передача данных ЭКГ клиенту.
         """
         timestamps = np.linspace(0, self.edf_data["duration"], self.vectors[0].shape[0])
+
         for i in range(0, self.vectors[0].shape[0], self.slice):
             if i + self.slice > self.vectors[0].shape[0]:
                 break

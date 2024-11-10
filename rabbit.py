@@ -34,7 +34,7 @@ class Rabbit:
         )
         self.conn_annotation = sqlite3.connect("Annotations.db")
         self.cursor_annotation = self.conn_annotation.cursor()
-        self.cursor.execute(
+        self.cursor_annotation.execute(
             """
         CREATE TABLE IF NOT EXISTS annotation (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -154,17 +154,19 @@ class Rabbit:
         )
         self.conn_annotation.commit()
 
-    def get_info_from_rabbitmq(self, data: dict) -> dict:
+    def get_info_from_rabbitmq(self, data: bytes) -> dict:
         """
         Функция для сохранения данных из RabbitMQ в базу данных
         """
+        data = data.decode()
         data = json.loads(data)
+        print("--Decoded ")
+        print(data)
         is_exist = self.get_data_by_name(data["file_name"])
         last_updated = datetime.datetime.now()
-        last_mode = self.get_mode(data)
-        predchunk = "ds1"
-        if not is_exist:
-            self.insert_data(
+        last_mode = "start"
+        predchunk = "none"
+        self.insert_data(
                 data["file_name"],
                 str(last_updated),
                 last_mode,

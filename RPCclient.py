@@ -56,6 +56,8 @@ def external_function(data, vectors) -> dict:
     full_message["chunk"] = vectors
     del full_message["data"]
     del full_message["header"]
+    if "annotations" in full_message:
+        del full_message["annotations"]
     message = json.dumps(full_message)
     response = client.send_data_and_get_result(message.encode())
     print(f"Received response: {response.decode()}")
