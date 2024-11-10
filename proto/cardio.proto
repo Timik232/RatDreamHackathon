@@ -19,6 +19,7 @@ message CardioData {
   repeated float vector2 = 3;
   repeated float vector3 = 4;
   string annotation = 5;
+  float x_annotation = 6;
 }
 
 message SetWorkingDirectoryRequest {

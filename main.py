@@ -29,6 +29,7 @@ class ECGSimulator:
     """
     Класс для работы с данными ЭКГ.
     """
+
     def __init__(self):
         # self.edf_data = self.read_edf_file("data/Ati4x1_15m_BL_6h.edf")
         # self.vectors = list(self.edf_data["data"].values())
@@ -59,7 +60,8 @@ class ECGSimulator:
                 vector1=sliced_vectors[0],
                 vector2=sliced_vectors[1],
                 vector3=sliced_vectors[2],
-                annotation=return_data
+                annotation=return_data["y"],
+                x_annotation=return_data["x"],
             )
             yield cardio_data
 

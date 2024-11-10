@@ -1,6 +1,7 @@
 """
 Модуль для работы с RabbitMQ и локальной базой данных
 """
+
 import pika
 import time
 import threading
@@ -14,6 +15,7 @@ class Rabbit:
     """
     Класс для работы с RabbitMQ
     """
+
     def __init__(self):
         self.conn = sqlite3.connect("RatDream.db")
         self.cursor = self.conn.cursor()
@@ -152,7 +154,7 @@ class Rabbit:
         )
         self.conn_annotation.commit()
 
-    def get_info_from_rabbitmq(self, data: dict) -> str:
+    def get_info_from_rabbitmq(self, data: dict) -> dict:
         """
         Функция для сохранения данных из RabbitMQ в базу данных
         """
@@ -173,7 +175,7 @@ class Rabbit:
         print("Data inserted")
         return self.predict_classes()
 
-    def predict_classes(self) -> str:
+    def predict_classes(self) -> dict:
         """
         Функция для предсказания классов
         """
@@ -191,9 +193,10 @@ class Rabbit:
         if result["y"] != "none":
             self.update_predchunk(last_updated, result["y"], result["mode"])
             self.insert_annotation(result["x"], result["y"])
-        return result["y"]
+        message = {"x": result["x"], "y": result["y"]}
+        return message
 
-    def process_data(self, data: dict) -> str:
+    def process_data(self, data: dict) -> dict:
         result = self.get_info_from_rabbitmq(data)
         return result
 
@@ -209,7 +212,7 @@ class Rabbit:
             print(f" [x] Received {body}")
             result = self.process_data(body)
             print(result)
-            result = result.encode()
+            result = json.dumps(result).encode()
             channel.basic_publish(
                 exchange="",
                 routing_key=properties.reply_to,
