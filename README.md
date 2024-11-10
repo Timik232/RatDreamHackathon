@@ -7,6 +7,10 @@
 ```bash
 poetry install
 ```
+После чего запустить main:
+```bash
+python main.py
+```
 Если poetry не установлен, то сначала установите его:
 ```bash
 pip install poetry
