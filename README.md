@@ -15,7 +15,7 @@ python main.py
 ```bash
 pip install poetry
 ```
-Также бекенд можно запустить через exe в release, он находится в основном репозитории:\
+Ссылка на основной репозиторий проекта:\
 [Ссылка на репозиторий](https://github.com/duny-explorer/Electrocorticogram-classification-system)
 
 Отдельным подмодулем находится фронтенд на Flutter, который работает как десктопное приложение. 
