@@ -13,7 +13,8 @@ pip install poetry
 ```
 Рядом с main создать папку models и поместить 
 туда файлы моделей с названиями "end_model.joblib" и "start_model.joblib".
-
+Ссылка на веса: \
+[Ссылка на веса](https://drive.google.com/drive/folders/1Ms7Gu2PjV4SnxYKZ_-ckaPcMm32903tI?usp=sharing)\
 После чего запустить main:
 ```bash
 python main.py
