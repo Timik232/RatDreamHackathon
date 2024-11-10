@@ -1,0 +1,3 @@
+[submodule "ai25front"]
+	path = ai25front
+	url = https://github.com/mentoster/ai25front.git
