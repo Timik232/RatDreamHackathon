@@ -164,7 +164,7 @@ class ECGSimulator:
             data (dict): Данные для сохранения в файле EDF.
         """
         file_path = os.path.join(
-            self.working_directory, f"ecg_output{self.number_to_save}.edf"
+            self.working_directory, f"{self.edf_data['file_name']}_annotated.edf"
         )
         self.number_to_save += 1
         data_to_write = copy.deepcopy(data)
